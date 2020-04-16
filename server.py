@@ -10,7 +10,7 @@ class StreamServer:
         self.host = host
         self.port = port
 
-        self.users = set
+        self.users = set()
 
         # the current frame to show
         self.frame = None
@@ -29,23 +29,23 @@ class StreamServer:
     async def streamer(self, websocket, path):
         while True:
             try:
-                self.frame = websocket.recv()
+                self.frame = await websocket.recv()
 
                 await asyncio.sleep(0.01)
             except websockets.ConnectionClosed as e:
                 break
-            
+
     # handle stream data
     async def run(self, websocket, path):
         # Register.
         self.users.add(websocket)
         try:
             while True:
-                await websocket.send(str(json.dumps(self.users)))
+                await websocket.send(str(self.frame))
                 await asyncio.sleep(0.01)
         finally:
             # Unregister.
-            self.users[websocket] = None
+            self.users.remove(websocket)
 
 server = StreamServer('localhost', 8080)
 server.start()
